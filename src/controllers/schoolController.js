@@ -2,7 +2,7 @@ const School = require("../models/school");
 const bcrypt = require("bcryptjs");
 const { StudentRequest, Student } = require("../models/studentsRegister");
 const moment = require("moment");
-
+const jwt = require("jsonwebtoken");
 exports.registerSchool = async (req, res) => {
   try {
     const {
@@ -149,7 +149,21 @@ exports.loginWithSchool = async (req, res) => {
     }
 
     if (school.status === "A") {
-      return res.status(200).json(school);
+      const payload = {
+        schoolId: school._id,
+        email: school.email,
+        name: school.name,
+        contact: school.contact,
+        countryCode: school.countryCode,
+        board: school.board,
+      };
+      const token = jwt.sign(payload, process.env.JWT_SECRET_FOR_SCHOOl, {
+        expiresIn: "30d",
+      });
+
+      school.token = token;
+      await school.save();
+      return res.status(200).json({ school, token: token });
     }
 
     res.status(403).json({ message: "Your request was rejected" });
@@ -277,6 +291,24 @@ exports.removeStudentFromSchool = async (req, res) => {
     res.status(200).json({ message: "Student deleted successfully", student });
   } catch (error) {
     console.error("Error deleting student:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.getSchoolDetailsById = async (req, res) => {
+  try {
+    const school = await School.findById(req.body.id);
+
+    if (!school) {
+      return res.status(404).json({ message: "School not found" });
+    }
+
+    res.status(200).json({
+      message: "School fetched successfully",
+      school,
+    });
+  } catch (error) {
+    console.error("Error fetching school:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

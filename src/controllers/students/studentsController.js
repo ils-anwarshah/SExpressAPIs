@@ -45,7 +45,6 @@ exports.requestStudentAccess = async (req, res) => {
       });
     }
 
-    // ✅ Check if the provided schoolId actually exists
     const schoolExists = await school.findById(schoolId);
     if (!schoolExists) {
       return res.status(400).json({
@@ -54,7 +53,6 @@ exports.requestStudentAccess = async (req, res) => {
       });
     }
 
-    // Check if student already approved in another school
     const approvedStudent = await StudentRequest.findOne({
       countryCode,
       mobileNumber,
@@ -257,7 +255,7 @@ exports.verifyStudentOTP = async (req, res) => {
       mobileNumber: student.mobileNumber,
       countryCode: student.countryCode,
     };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    const token = jwt.sign(payload, process.env.JWT_SECRET_FOR_STUDENT, {
       expiresIn: "30d",
     });
     student.jwtToken = token;

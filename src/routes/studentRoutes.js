@@ -6,7 +6,9 @@ const {
   verifyStudentOTP,
   getLoginStudentDetails,
 } = require("../controllers/students/studentsController");
-const { authenticateToken } = require("../middleware/auhtenticationMiddleware");
+const {
+  default: authenticateTokenForStudent,
+} = require("../middleware/auhtenticationMiddleware");
 
 const router = express.Router();
 
@@ -16,7 +18,7 @@ router.post("/send-student-otp", sendStudentsOTP);
 router.post("/verify-student-otp", verifyStudentOTP);
 router.post(
   "/get-login-student-details",
-  authenticateToken,
+  authenticateTokenForStudent,
   getLoginStudentDetails
 );
 

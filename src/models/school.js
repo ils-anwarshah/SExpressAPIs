@@ -7,6 +7,7 @@ const schoolSchema = new mongoose.Schema({
   countryCode: { type: String, required: true, default: "+91" },
   email: { type: String, required: true, unique: true },
   website: { type: String },
+  token: { type: String },
   principal: { type: String, required: true },
   establishedYear: { type: Number, required: true },
   board: { type: String, required: true },

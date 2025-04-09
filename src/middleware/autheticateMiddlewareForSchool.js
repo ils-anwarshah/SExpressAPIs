@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-export default function authenticateTokenForStudent(req, res, next) {
+export default function authenticateTokenForSchool(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader;
 
@@ -11,7 +11,7 @@ export default function authenticateTokenForStudent(req, res, next) {
     });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET_FOR_STUDENT, (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET_FOR_SCHOOl, (err, user) => {
     if (err) {
       return res.status(403).json({
         message: "Invalid or expired token",
