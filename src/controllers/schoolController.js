@@ -163,7 +163,7 @@ exports.loginWithSchool = async (req, res) => {
 
       school.token = token;
       await school.save();
-      return res.status(200).json({ school, token: token });
+      return res.status(200).json({ school });
     }
 
     res.status(403).json({ message: "Your request was rejected" });
@@ -297,7 +297,7 @@ exports.removeStudentFromSchool = async (req, res) => {
 
 exports.getSchoolDetailsById = async (req, res) => {
   try {
-    const school = await School.findById(req.body.id);
+    const school = await School.findById(req.body.id).select("-password");
 
     if (!school) {
       return res.status(404).json({ message: "School not found" });
