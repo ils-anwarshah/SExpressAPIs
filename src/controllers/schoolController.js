@@ -2,7 +2,10 @@ const School = require("../models/school");
 const bcrypt = require("bcryptjs");
 const { StudentRequest, Student } = require("../models/studentsRegister");
 const moment = require("moment");
+const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
+const { default: mongoose } = require("mongoose");
+const { default: validateID } = require("../utils/checkID");
 exports.registerSchool = async (req, res) => {
   try {
     const {
@@ -309,6 +312,173 @@ exports.getSchoolDetailsById = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching school:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.addTeachersInSchool = async (req, res) => {
+  try {
+    const {
+      schoolId,
+      name,
+      email,
+      phone,
+      subject,
+      qualification,
+      experience,
+      gender,
+      dob,
+      address,
+      countryCode,
+      joiningDate,
+      profilePicture,
+      status,
+    } = req.body;
+
+    // Validation
+    if (
+      !schoolId ||
+      !name ||
+      !email ||
+      !phone ||
+      !subject ||
+      !qualification ||
+      !experience ||
+      !gender ||
+      !countryCode ||
+      !dob ||
+      !address ||
+      !joiningDate ||
+      !status
+    ) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const school = await School.findById(schoolId);
+    if (!school) {
+      return res.status(404).json({ error: "School not found" });
+    }
+
+    const newTeacher = {
+      id: uuidv4(),
+      name,
+      email,
+      schoolId,
+      phone,
+      subject,
+      qualification,
+      experience,
+      gender,
+      dob,
+      countryCode,
+      address,
+      joiningDate,
+      profilePicture: profilePicture || null,
+      status,
+      createdAt: new Date().toISOString(),
+    };
+
+    school.teachers.push(newTeacher);
+    await school.save();
+
+    res.status(201).json({
+      message: "Teacher added successfully",
+      teacher: newTeacher,
+    });
+  } catch (error) {
+    console.error("Error adding teacher:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.getTeachersInSchool = async (req, res) => {
+  try {
+    const { schoolId } = req.params;
+
+    // Validate ObjectId
+    if (validateID(schoolId)) {
+      return res.status(400).json({ error: "Invalid school ID format" });
+    }
+
+    const school = await School.findById(schoolId);
+    if (!school) {
+      return res.status(404).json({ error: "School not found" });
+    }
+
+    res.status(200).json({
+      message: "Teachers fetched successfully",
+      teachers: school.teachers,
+    });
+  } catch (error) {
+    console.error("Error fetching teachers:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.addClassToSchool = async (req, res) => {
+  try {
+    const { schoolId, name, section, classTeacher, classTeacherId, strength } =
+      req.body;
+
+    if (
+      !schoolId ||
+      !name ||
+      !section ||
+      !classTeacher ||
+      !classTeacherId ||
+      !strength
+    ) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const school = await School.findById(schoolId);
+    if (!school) {
+      return res.status(404).json({ error: "School not found" });
+    }
+
+    const newClass = {
+      name,
+      section,
+      classTeacherId,
+      classTeacher,
+      strength,
+      schoolId,
+      createdAt: new Date().toISOString(),
+    };
+
+    school.classes.push(newClass);
+    await school.save();
+
+    res.status(201).json({
+      message: "Class added successfully",
+      class: newClass,
+    });
+  } catch (error) {
+    console.error("Error adding class:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.getSchoolClasses = async (req, res) => {
+  try {
+    const { schoolId } = req.params;
+
+    // Validate ObjectId
+    if (validateID(schoolId)) {
+      return res.status(400).json({ error: "Invalid school ID format" });
+    }
+
+    const school = await School.findById(schoolId);
+    if (!school) {
+      return res.status(404).json({ error: "School not found" });
+    }
+
+    res.status(200).json({
+      message: "classes fetched successfully",
+      classes: school.classes,
+    });
+  } catch (error) {
+    console.error("Error fetching classes:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
